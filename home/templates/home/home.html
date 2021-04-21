@@ -29,22 +29,22 @@
       </div>
   
       <div id="div_change" class="content-section">
-        <div class="media">
+        <div class="media ">
   
-          <img id="myimage"  src="static\home\image_upload.png" width="40%" >
+          <img id="myimage " class="rounded mx-auto d-block"  src="static\home\image_upload.png" width="40%" >
       </div>
       <br>
-      <h1 id="this_text" class="text-primary">This is the image you upload</h1>
+      <h1 id="this_text" class="text-primary text-center ">This is the image you upload</h1>
       <br>
       
       <!-- FORM HERE -->
       </div>
       <div class="content-section">
         <div class="media">
-          <img width="40%" id="detected_image" src="static\home\defaultsign.jpg">
+          <img width="40%" id="detected_image" class="rounded mx-auto d-block" src="static\home\defaultsign.jpg">
         </div>
         <br>
-        <h1 id="detected_desc" class="text-success">This is the detected sign</h1>
+        <h1 id="detected_desc" class="text-success text-center ">This is the detected sign</h1>
         <!-- FORM HERE -->
         <br>
       </div>
@@ -60,6 +60,8 @@
 <script>
 
 function changeImage(data) {
+  if(data)
+  {
   if( parseInt(data[1]) <= 9)
   {
   document.getElementById('detected_image').src="./static/home/"+data[0]+data[1]+".png"
@@ -73,25 +75,33 @@ function changeImage(data) {
   document.getElementById('detected_desc').innerHTML=data
   
 }
+else
+{
+  alert("Please upload file!")
+}
 
-  function readURL(input) {
+}
+ function readURL(input) {
+   if(input)
+   {
       if (input.files && input.files[0]) {
           var reader = new FileReader();
 
           reader.onload = function (e) {
               $('#myimage').attr('src', e.target.result);
+              
           };
 
           reader.readAsDataURL(input.files[0]);
-      }
+     }
       document.getElementById('div_change').innerHTML='<div class="media"> <img id="myimage"  src="static\home\image_upload.png" width="40%" ></div><h1 id="this_text" class="text-primary">This is the image you upload</h1>'
       document.getElementById('this_text').innerHTML=""
       document.getElementById('choose_file').innerHTML="File selected"
       document.getElementById("choose_file").classList.add('text-success');
       document.getElementById("choose_file").classList.add('font-weight-bold');
       
-
-
+      
+    }  
      
   }
 </script>
@@ -124,7 +134,10 @@ function changeImage(data) {
         processData:false,
         success: function(data){   
           changeImage(data);
-        }
+        },
+        error: function(data){
+               alert("Eroare neasteptata ! Probabil formatul fisierului !");
+               } 
     })
   
   });
