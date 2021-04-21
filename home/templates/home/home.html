@@ -1,0 +1,136 @@
+{% extends "home/base.html" %}
+
+{% block content %}
+
+<script
+  src="https://code.jquery.com/jquery-3.6.0.js"
+  integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+  crossorigin="anonymous"></script>
+
+
+<form id="predict1" enctype="multipart/form-data">
+  
+  {% csrf_token %}
+  <article class="media content-section">
+    <div class="media-body">
+    
+      <div class="article-metadata">
+        <small class="text-muted">{{ post.date_posted }}</small>
+       <div class="input-group">
+            <div class="custom-file">
+              <input  class="custom-file-input" id="upload_image" name="filePath"  onchange="readURL(this)"  type="file" accept="image/*"/>
+              <label class="custom-file-label " id="choose_file" for="inputGroupFile04">Choose file</label>
+            </div>
+            <div class="input-group-append">
+              <input type="submit"class="btn btn-primary" value="Predict">
+            </div>
+          
+      </div>
+      </div>
+  
+      <div id="div_change" class="content-section">
+        <div class="media">
+  
+          <img id="myimage"  src="static\home\image_upload.png" width="40%" >
+      </div>
+      <br>
+      <h1 id="this_text" class="text-primary">This is the image you upload</h1>
+      <br>
+      
+      <!-- FORM HERE -->
+      </div>
+      <div class="content-section">
+        <div class="media">
+          <img width="40%" id="detected_image" src="static\home\defaultsign.jpg">
+        </div>
+        <br>
+        <h1 id="detected_desc" class="text-success">This is the detected sign</h1>
+        <!-- FORM HERE -->
+        <br>
+      </div>
+    
+
+
+</div>
+</article>
+
+ </form>
+
+
+<script>
+
+function changeImage(data) {
+  if( parseInt(data[1]) <= 9)
+  {
+  document.getElementById('detected_image').src="./static/home/"+data[0]+data[1]+".png"
+  data=data.slice(2) 
+ }
+  else{
+  document.getElementById('detected_image').src="./static/home/"+data[0]+".png"
+  data=data.slice(1) 
+  }
+
+  document.getElementById('detected_desc').innerHTML=data
+  
+}
+
+  function readURL(input) {
+      if (input.files && input.files[0]) {
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#myimage').attr('src', e.target.result);
+          };
+
+          reader.readAsDataURL(input.files[0]);
+      }
+      document.getElementById('div_change').innerHTML='<div class="media"> <img id="myimage"  src="static\home\image_upload.png" width="40%" ></div><h1 id="this_text" class="text-primary">This is the image you upload</h1>'
+      document.getElementById('this_text').innerHTML=""
+      document.getElementById('choose_file').innerHTML="File selected"
+      document.getElementById("choose_file").classList.add('text-success');
+      document.getElementById("choose_file").classList.add('font-weight-bold');
+      
+
+
+     
+  }
+</script>
+
+<script type="text/javascript">
+
+  $(document).on('submit','#predict1',function(e){
+
+    $(document).ajaxSend(function (event, jqxhr, settings) {
+    jqxhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+});
+   
+        e.preventDefault();
+
+      let image_upload = $('#upload_image').prop('files')[0];
+      
+      form_data = new FormData();
+      form_data.append('image_upload', image_upload);
+
+      
+    $.ajax({
+        
+        url:'predict/',
+        processData: false,
+        contentType: false,
+        method : 'POST',
+        type:'POST',
+        data:form_data,
+        cache:false,
+        processData:false,
+        success: function(data){   
+          changeImage(data);
+        }
+    })
+  
+  });
+
+  
+  </script>
+
+
+{% endblock %}
