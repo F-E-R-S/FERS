@@ -8,142 +8,44 @@
   crossorigin="anonymous"></script>
 
 
-<form id="predict1" enctype="multipart/form-data">
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.1.0/bootstrap.min.js"></script>
   
-  {% csrf_token %}
-  <article class="media content-section">
-    <div class="media-body">
-    
-      <div class="article-metadata">
-        <small class="text-muted">{{ post.date_posted }}</small>
-       <div class="input-group">
-            <div class="custom-file">
-              <input  class="custom-file-input" id="upload_image" name="filePath"  onchange="readURL(this)"  type="file" accept="image/*"/>
-              <label class="custom-file-label " id="choose_file" for="inputGroupFile04">Choose file</label>
-            </div>
-            <div class="input-group-append">
-              <input type="submit"class="btn btn-primary" value="Predict">
-            </div>
-          
-      </div>
-      </div>
-  
-      <div id="div_change" class="content-section">
-        <div class="media ">
-  
-          <img id="myimage " class="rounded mx-auto d-block"  src="static\home\image_upload.png" width="40%" >
-      </div>
-      <br>
-      <h1 id="this_text" class="text-primary text-center ">This is the image you upload</h1>
-      <br>
-      
-      <!-- FORM HERE -->
-      </div>
-      <div class="content-section">
-        <div class="media">
-          <img width="40%" id="detected_image" class="rounded mx-auto d-block" src="static\home\defaultsign.jpg">
+  <div class="border border-light p-3 mb-4 text-center">
+    {% if user.is_authenticated %}
+    <h1>Welcome, {{ user.get_username }}. Thanks for logging in.</h1>
+{% else %}
+    <h1></h1>
+{% endif %}
+ <br><br><br>
+  </div>
+
+     <div class="d-flex align-items-center justify-content-center" style="height: 350px">
+      <div class="p-2 bd-highlight col-example text-center"><div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="/static/home/webcam.png" alt="Webcam">
+        <div class="card-body">
+          <h5 class="card-title">Webcam</h5>
+          <p class="card-text">Detect traffic signs using your webcam</p>
+          <a href="/live" class="btn btn-primary">Open</a>
         </div>
-        <br>
-        <h1 id="detected_desc" class="text-success text-center ">This is the detected sign</h1>
-        <!-- FORM HERE -->
-        <br>
-      </div>
-    
+      </div></div>
+      <div class="p-2 bd-highlight col-example text-center"><div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="/static/home/image.png" alt="Image">
+        <div class="card-body">
+          <h5 class="card-title">Image</h5>
+          <p class="card-text">Detect traffic signs by uploading an image</p>
+          <a href="/image" class="btn btn-warning">Open</a>
+        </div>
+      </div></div>
+      <div class="p-2 bd-highlight col-example text-center"><div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="/static/home/bug.png" alt="Report">
+        <div class="card-body ">
+          <h5 class="card-title">Report Bug</h5>
+          <p class="card-text">Help us improve by reporting a bug</p>
+          <a href="/report" class="btn btn-danger">Open</a>
+        </div>
+      </div></div>
+    </div>
 
-
-</div>
-</article>
-
- </form>
-
-
-<script>
-
-function changeImage(data) {
-  if(data)
-  {
-  if( parseInt(data[1]) <= 9)
-  {
-  document.getElementById('detected_image').src="./static/home/"+data[0]+data[1]+".png"
-  data=data.slice(2) 
- }
-  else{
-  document.getElementById('detected_image').src="./static/home/"+data[0]+".png"
-  data=data.slice(1) 
-  }
-
-  document.getElementById('detected_desc').innerHTML=data
-  
-}
-else
-{
-  alert("Please upload file!")
-}
-
-}
- function readURL(input) {
-   if(input)
-   {
-      if (input.files && input.files[0]) {
-          var reader = new FileReader();
-
-          reader.onload = function (e) {
-              $('#myimage').attr('src', e.target.result);
-              
-          };
-
-          reader.readAsDataURL(input.files[0]);
-     }
-      document.getElementById('div_change').innerHTML='<div class="media"> <img id="myimage"  src="static\home\image_upload.png" width="40%" ></div><h1 id="this_text" class="text-primary">This is the image you upload</h1>'
-      document.getElementById('this_text').innerHTML=""
-      document.getElementById('choose_file').innerHTML="File selected"
-      document.getElementById("choose_file").classList.add('text-success');
-      document.getElementById("choose_file").classList.add('font-weight-bold');
-      
-      
-    }  
-     
-  }
-</script>
-
-<script type="text/javascript">
-
-  $(document).on('submit','#predict1',function(e){
-
-    $(document).ajaxSend(function (event, jqxhr, settings) {
-    jqxhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
-});
-   
-        e.preventDefault();
-
-      let image_upload = $('#upload_image').prop('files')[0];
-      
-      form_data = new FormData();
-      form_data.append('image_upload', image_upload);
-
-      
-    $.ajax({
-        
-        url:'predict/',
-        processData: false,
-        contentType: false,
-        method : 'POST',
-        type:'POST',
-        data:form_data,
-        cache:false,
-        processData:false,
-        success: function(data){   
-          changeImage(data);
-        },
-        error: function(data){
-               alert("Eroare neasteptata ! Probabil formatul fisierului !");
-               } 
-    })
-  
-  });
-
-  
-  </script>
-
+ 
 
 {% endblock %}

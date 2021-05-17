@@ -1,4 +1,29 @@
 {% extends "home/base.html" %}
-{% block content %}    
-    <h1>Report page baby!</h1>
-{%endblock content %}
+
+{% block content %}
+
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.1.0/bootstrap.min.js"></script>
+
+
+
+   
+  <div class="d-flex align-items-center justify-content-center" style="height: 450px">
+    <div class="p-2 bd-highlight col-example text-center"><div class="card" style="width: 27rem; height: 32rem;">
+      <br><br>
+      <h3>Report bug</h3>
+      <br><br>
+      <form method="POST"  enctype="multipart/form-data">
+        <table>
+          <tr>
+        {{ form }}
+        
+        <tr colspan=2>
+          </tr>
+        
+        </table>
+        <input type="submit" class="b1" value="Submit"  > 
+      </form>
+      </div>
+  </div>
+{% endblock %}
