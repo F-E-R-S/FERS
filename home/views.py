@@ -1,5 +1,7 @@
+from numpy.core import numeric
 from home.forms import ReportBug
 from django.shortcuts import render
+from django.db.models import Avg
 from django.http import HttpResponse,StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
 import json
@@ -20,7 +22,9 @@ from cv2 import cv2
 from django.views.decorators.csrf import csrf_exempt
 from keras.models import load_model
 
-data=['a','b','c']
+
+data=['a','b']
+solution=[]
 model = load_model("./models/TS_model2.h5")
 
 def preprocessing(img):
@@ -32,7 +36,6 @@ def preprocessing(img):
 
 def detect(found , class_name , img_rgb,user):
     for (x, y, width, height) in found:
-            
         sign_image = img_rgb[y:y + width, x:x + height]
         sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGB)
         img = np.asarray(sign_image)
@@ -53,6 +56,10 @@ def detect(found , class_name , img_rgb,user):
 
             obj = Sign.objects.get(pk=int(classIndex))
             Event.objects.create(user_id=user,sign_id=obj,accuracy=probabilityValue*10)
+            obj.avg =Event.objects.filter(sign_id=int(classIndex)).aggregate(Avg('accuracy'))['accuracy__avg']
+            obj.lower_than_50 =Event.objects.filter(sign_id=int(classIndex) , accuracy__lt = 50).count()
+            obj.higher_than_50 =Event.objects.filter(sign_id=int(classIndex) ,accuracy__gte = 50).count()
+            obj.save()
             data[0]=str(int(classIndex))
            
             if probabilityValue==10:
@@ -60,10 +67,18 @@ def detect(found , class_name , img_rgb,user):
             else:
                 probabilityValue=probabilityValue*10
                 data[1]=str("%.2f" % probabilityValue)
-
-
             
-    return img_rgb    
+                     
+            solution.extend([list(data)])
+            
+
+    return img_rgb
+          
+            
+                
+            
+           
+    
        
         
 className = [
@@ -124,7 +139,10 @@ def reportBug(request):
     if request.method == 'POST':
                 
         form = ReportBug(request.POST , request.FILES )
+       
         if form.is_valid():
+            form = form.save(commit=False)
+            form.user = request.user
             form.save()
         return render( request, "home/done.html", {'form':form})     
     
@@ -155,18 +173,21 @@ def predict(request):
             found = my_data.detectMultiScale(img_gray,minSize =(20, 20))
             amount_found = len(found)
             if amount_found != 0:
-                img_rgb = detect(found,className[i][1],img_rgb,user)   
-        
+                img_rgb = detect(found,className[i][1],img_rgb,user)
+
+
         img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2RGB)
         path = './media/' 
         random_number = str(random.randint(1,1000000000))
-        random_number = "a"+random_number
-        cv2.imwrite(os.path.join(path ,random_number+".jpg"), img_bgr)
-        solution=data[0]+data[1]+random_number
-        data[0]=''
-        data[1]=''
+        cv2.imwrite(os.path.join(path ,random_number+".jpg"), img_bgr)       
         
-        return HttpResponse(solution)
+        global solution
+        solution.extend([random_number])
+        solution_right = solution
+
+        solution=[]
+
+        return JsonResponse(solution_right , safe=False)
     else:
        return HttpResponse()
     
@@ -208,10 +229,16 @@ class VideoCamera(object):
                     cv2.rectangle(img_rgb, (x, y),(x + height, y + width),(0, 255, 0), 5)
                     cv2.putText(img_rgb,class_name + ' ' + str('{:.2f}'.format(probabilityValue*10))+'%',(x,y),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,164,0),2)
                    
-                   # add detection to database
+                # add detection to database
 
                 obj = Sign.objects.get(pk=int(classIndex))
-                Event.objects.create(user_id=user,sign_id=obj,accuracy=probabilityValue*10)
+                Event.objects.create(user_id=user,sign_id=obj,accuracy=probabilityValue*10)          
+                obj.avg =Event.objects.filter(sign_id=int(classIndex)).aggregate(Avg('accuracy'))['accuracy__avg']
+                obj.lower_than_50 =Event.objects.filter(sign_id=int(classIndex) , accuracy__lt = 50).count()
+                obj.higher_than_50 =Event.objects.filter(sign_id=int(classIndex) ,accuracy__gte = 50).count()
+                obj.save()
+                data[0]=str(int(classIndex))
+           
                 
                 
                 
@@ -288,7 +315,7 @@ def gen(camera,user):
     while True:
         frame = camera.get_frame(user)
               
-        yield(b'--frame\r\n'
+        yield (b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 @login_required

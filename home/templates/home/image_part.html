@@ -38,7 +38,7 @@
       <br>
        <!-- FORM HERE -->
       </div>
-      <div class="content-section">
+      <div id="detected_div" class="content-section">
         <div class="media">
           <img width="40%" id="detected_image" class="rounded mx-auto d-block" src="/static/home/defaultsign.jpg">
         </div>
@@ -61,24 +61,34 @@
 function changeImage(data) {
 
   
-  if(data[0].localeCompare('a')!=0)
-  {
-  $('#detected_desc').removeClass("text-danger");
-  if( parseInt(data[1]) <= 9)
-  {
-  document.getElementById('detected_image').src="/static/home/"+data[0]+data[1]+".png"
-  data=data.slice(2); 
- }
-  else{
-  document.getElementById('detected_image').src="/static/home/"+data[0]+".png"
-  data=data.slice(1);
-  }
+  var i;
+
+if(data.length>0)
+ {
+
+
+
+$('#detected_desc').removeClass("text-danger");
+
+document.getElementById('detected_image').src="/static/home/"+data[0][0]+".png"
+
+document.getElementById('detected_desc').innerHTML=data[0][1]+" %";
  
-  document.getElementById('detected_desc').innerHTML=data.slice(0, 5)+" %";
-  data=data.slice(5,);
-  if(data)
-  {document.getElementById('myimage').src="/media/"+data+".jpg";}
+document.getElementById('myimage').src="/media/"+data[data.length -1]+".jpg";
+
+
+
+if(data.length >2)
+{
+
+for ( i=1; i<data.length-1; i++)
+  {
+ 
+ document.getElementById('detected_div').innerHTML=document.getElementById('detected_div').innerHTML + '<div class="media"><img width="40%" id="detected_image" class="rounded mx-auto d-block" src="/static/home/'+data[i][0]+'.png"></div><br><h1 id="detected_desc" class="text-success text-center ">'+data[i][1]+' %</h1><br>'
+
  }
+}
+}
 else
 {
   document.getElementById('detected_image').src="/static/home/not_found.png"; 
@@ -86,6 +96,7 @@ else
   $('#detected_desc').addClass("text-danger");
 }
 }
+
  function readURL(input) {
    if(input)
    {
@@ -117,6 +128,10 @@ else
 
   $(document).on('submit','#predict1',function(e){
 
+
+    document.getElementById('detected_div').innerHTML='<div class="media"><img width="40%" id="detected_image" class="rounded mx-auto d-block" src="/static/home/defaultsign.jpg"></div><br><h1 id="detected_desc" class="text-success text-center ">This is the detected sign</h1> <!-- FORM HERE --><br>'  
+    document.getElementById('detected_image').src="/static/home/loading.gif";
+    document.getElementById('detected_desc').innerHTML="Loading...";  
     $(document).ajaxSend(function (event, jqxhr, settings) {
     jqxhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
 });
@@ -139,11 +154,8 @@ else
         data:form_data,
         cache:false,
         processData:false,
-        success: function(data){   
-          changeImage(data);
-          
-          
-          
+        success: function(data){ 
+         changeImage(data);
         },
       })
   
